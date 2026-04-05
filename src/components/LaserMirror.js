@@ -40,6 +40,27 @@ export function renderLaserMirror(container) {
         <div id="pos-error" style="margin-top: 0.5rem; font-weight: 600;"></div>
       </div>
     </div>
+
+    <!-- Chain Rule Analysis Section -->
+    <div id="chain-rule-display" style="margin-top: 1rem; font-family: monospace; background: rgba(255,153,0,0.1); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,153,0,0.2); font-size: 0.75rem;">
+      <div style="color: var(--accent-primary); font-weight: bold; margin-bottom: 0.5rem;">Chain Rule Analysis (dy/dθ)</div>
+      <div id="cr-m1" style="margin-bottom: 0.5rem;">
+        <div>M1 Sensitivity:</div>
+        <div style="padding-left: 0.5rem; color: var(--text-secondary);">
+          dy/dθ₁ = (dy/dφ₁) · (dφ₁/dθ₁) <br>
+          = <span id="cr-m1-comp1">0</span> · <span id="cr-m1-comp2">0</span> <br>
+          = <span id="cr-m1-total" style="color: var(--accent-secondary); font-weight: bold;">0</span> cm/deg
+        </div>
+      </div>
+      <div id="cr-m2">
+        <div>M2 Sensitivity:</div>
+        <div style="padding-left: 0.5rem; color: var(--text-secondary);">
+          dy/dθ₂ = (dy/dφ₂) · (dφ₂/dθ₂) <br>
+          = <span id="cr-m2-comp1">0</span> · <span id="cr-m2-comp2">0</span> <br>
+          = <span id="cr-m2-total" style="color: var(--accent-tertiary); font-weight: bold;">0</span> cm/deg
+        </div>
+      </div>
+    </div>
   `;
 
   section.appendChild(canvasContainer);
@@ -57,8 +78,67 @@ export function renderLaserMirror(container) {
     theta2: controls.querySelector('#theta2-val'),
     path: controls.querySelector('#path-length'),
     spot: controls.querySelector('#screen-pos'),
-    error: controls.querySelector('#pos-error')
+    error: controls.querySelector('#pos-error'),
+    crM1Comp1: controls.querySelector('#cr-m1-comp1'),
+    crM1Comp2: controls.querySelector('#cr-m1-comp2'),
+    crM1Total: controls.querySelector('#cr-m1-total'),
+    crM2Comp1: controls.querySelector('#cr-m2-comp1'),
+    crM2Comp2: controls.querySelector('#cr-m2-comp2'),
+    crM2Total: controls.querySelector('#cr-m2-total')
   };
+
+  function getMirrorEdges(pos, angle, mLen = 300) {
+    return {
+      a: { x: pos.x - (mLen / 2) * Math.sin(angle), y: pos.y + (mLen / 2) * Math.cos(angle) },
+      b: { x: pos.x + (mLen / 2) * Math.sin(angle), y: pos.y - (mLen / 2) * Math.cos(angle) }
+    };
+  }
+
+  function traceRay(alphaDeg, theta1Deg, theta2Deg) {
+    const alpha = (alphaDeg * Math.PI) / 180;
+    const theta1 = (-theta1Deg * Math.PI) / 180;
+    const theta2 = (-theta2Deg * Math.PI) / 180;
+
+    const m1Pos = { x: 150, y: 400 };
+    const m2Pos = { x: 150, y: 200 };
+    const screenX = 350;
+
+    const m1Edges = getMirrorEdges(m1Pos, theta1 + Math.PI / 2);
+    const m2Edges = getMirrorEdges(m2Pos, theta2);
+
+    const sourceLen = 150;
+    const sourcePos = {
+      x: m1Pos.x - sourceLen * Math.cos(alpha),
+      y: m1Pos.y - sourceLen * Math.sin(alpha)
+    };
+
+    let currentPos = sourcePos;
+    let currentAngle = alpha;
+    let phi1 = null;
+    let phi2 = null;
+
+    const hit1 = getIntersection(currentPos, currentAngle, m1Edges.a, m1Edges.b);
+    if (!hit1) return { spot: null };
+
+    currentAngle -= 2 * theta1;
+    phi1 = currentAngle;
+    currentPos = hit1;
+
+    const hit2 = getIntersection(currentPos, currentAngle, m2Edges.a, m2Edges.b);
+    if (!hit2) return { spot: null, phi1 };
+
+    currentAngle = -(2 * theta2) - currentAngle - Math.PI;
+    phi2 = currentAngle;
+    currentPos = hit2;
+
+    const dx = Math.cos(currentAngle);
+    const dy = -Math.sin(currentAngle);
+    if (dx <= 0) return { spot: null, phi1, phi2 };
+
+    const t_screen = (screenX - currentPos.x) / dx;
+    const endY = currentPos.y + t_screen * dy;
+    return { spot: endY / 20, phi1, phi2 };
+  }
 
   function getIntersection(rayOrigin, rayAngle, segmentA, segmentB) {
     const dx = Math.cos(rayAngle);
@@ -252,6 +332,90 @@ export function renderLaserMirror(container) {
     displays.theta1.textContent = theta1Deg;
     displays.theta2.textContent = theta2Deg;
     displays.path.textContent = `Total Path: ${(totalPath / 20).toFixed(1)} cm`;
+
+    // --- Chain Rule Calculation ---
+    const delta = 0.5; // degree step
+    const base = traceRay(alphaDeg, theta1Deg, theta2Deg);
+    
+    // M1 Analysis
+    const step1 = traceRay(alphaDeg, theta1Deg + delta, theta2Deg);
+    if (base.spot !== null && step1.spot !== null) {
+      const dy_dtheta1 = (step1.spot - base.spot) / delta;
+      const dphi1_dtheta1 = (step1.phi1 - base.phi1) * (180 / Math.PI) / delta;
+      const dy_dphi1 = dy_dtheta1 / dphi1_dtheta1;
+
+      displays.crM1Comp1.textContent = dy_dphi1.toFixed(3);
+      displays.crM1Comp2.textContent = dphi1_dtheta1.toFixed(1);
+      displays.crM1Total.textContent = dy_dtheta1.toFixed(3);
+
+      // Ghost Ray for M1 sensitivity
+      drawGhostPath(alphaDeg, theta1Deg + delta, theta2Deg, 'rgba(255, 126, 95, 0.2)');
+    }
+
+    // M2 Analysis
+    const step2 = traceRay(alphaDeg, theta1Deg, theta2Deg + delta);
+    if (base.spot !== null && step2.spot !== null) {
+      const dy_dtheta2 = (step2.spot - base.spot) / delta;
+      const dphi2_dtheta2 = (step2.phi2 - base.phi2) * (180 / Math.PI) / delta;
+      const dy_dphi2 = dy_dtheta2 / dphi2_dtheta2;
+
+      displays.crM2Comp1.textContent = dy_dphi2.toFixed(3);
+      displays.crM2Comp2.textContent = dphi2_dtheta2.toFixed(1);
+      displays.crM2Total.textContent = dy_dtheta2.toFixed(3);
+
+      // Ghost Ray for M2 sensitivity
+      drawGhostPath(alphaDeg, theta1Deg, theta2Deg + delta, 'rgba(254, 180, 123, 0.2)');
+    }
+  }
+
+  function drawGhostPath(a, t1, t2, color) {
+    const alpha = (a * Math.PI) / 180;
+    const theta1 = (-t1 * Math.PI) / 180;
+    const theta2 = (-t2 * Math.PI) / 180;
+
+    const m1Pos = { x: 150, y: 400 };
+    const m2Pos = { x: 150, y: 200 };
+    const screenX = 350;
+
+    const m1Edges = getMirrorEdges(m1Pos, theta1 + Math.PI / 2);
+    const m2Edges = getMirrorEdges(m2Pos, theta2);
+
+    const sourceLen = 150;
+    const sourcePos = {
+      x: m1Pos.x - sourceLen * Math.cos(alpha),
+      y: m1Pos.y - sourceLen * Math.sin(alpha)
+    };
+
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.setLineDash([5, 5]);
+    ctx.lineWidth = 1;
+
+    let cPos = sourcePos;
+    let cAng = alpha;
+
+    const h1 = getIntersection(cPos, cAng, m1Edges.a, m1Edges.b);
+    if (h1) {
+      ctx.beginPath(); ctx.moveTo(cPos.x, cPos.y); ctx.lineTo(h1.x, h1.y); ctx.stroke();
+      cAng -= 2 * theta1;
+      cPos = h1;
+
+      const h2 = getIntersection(cPos, cAng, m2Edges.a, m2Edges.b);
+      if (h2) {
+        ctx.beginPath(); ctx.moveTo(cPos.x, cPos.y); ctx.lineTo(h2.x, h2.y); ctx.stroke();
+        cAng = -(2 * theta2) - cAng - Math.PI;
+        cPos = h2;
+
+        const dx = Math.cos(cAng);
+        const dy = -Math.sin(cAng);
+        if (dx > 0) {
+          const t_screen = (screenX - cPos.x) / dx;
+          const endY = cPos.y + t_screen * dy;
+          ctx.beginPath(); ctx.moveTo(cPos.x, cPos.y); ctx.lineTo(screenX, endY); ctx.stroke();
+        }
+      }
+    }
+    ctx.restore();
   }
 
   alphaSlider.addEventListener('input', draw);

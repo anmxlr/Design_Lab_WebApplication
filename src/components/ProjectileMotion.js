@@ -35,7 +35,7 @@ export function renderProjectileMotion(container) {
       <div id="v-ball">Ball Launch Velocity: 0 m/s</div>
       <div id="range-calc" style="color: var(--accent-primary); font-weight: 600;">Expected Range: 0 m</div>
       <div style="margin-top: 1rem; border-top: 1px solid #444; padding-top: 0.5rem;">
-        <label class="input-label">Measured Range (m):</label>
+        <label class="input-label">Measured Range (cm):</label>
         <input type="number" id="measured-range" step="0.1" style="width: 100%; background: #222; border: 1px solid #444; color: #fff; padding: 5px; border-radius: 4px;">
         <div id="range-error" style="margin-top: 0.5rem; font-weight: 600;"></div>
       </div>
