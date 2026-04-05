@@ -36,8 +36,34 @@ export function renderProjectileMotion(container) {
       <div id="range-calc" style="color: var(--accent-primary); font-weight: 600;">Expected Range: 0 m</div>
       <div style="margin-top: 1rem; border-top: 1px solid #444; padding-top: 0.5rem;">
         <label class="input-label">Measured Range (cm):</label>
-        <input type="number" id="measured-range" step="0.1" style="width: 100%; background: #222; border: 1px solid #444; color: #fff; padding: 5px; border-radius: 4px;">
+        <input type="number" id="measured-range" step="1" style="width: 100%; background: #222; border: 1px solid #444; color: #fff; padding: 5px; border-radius: 4px;">
         <div id="range-error" style="margin-top: 0.5rem; font-weight: 600;"></div>
+      </div>
+    </div>
+
+    <!-- Physics Breakdown Section -->
+    <div id="physics-explanation" style="margin-top: 1rem; font-family: monospace; background: rgba(255,153,0,0.1); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,153,0,0.2); font-size: 0.75rem;">
+      <div style="color: var(--accent-primary); font-weight: bold; margin-bottom: 0.5rem;">Physics Breakdown</div>
+      <div id="exp-impact" style="margin-bottom: 0.5rem;">
+        <div>1. Impact: vᵢ = √2gL(1-cosθ)</div>
+        <div style="padding-left: 0.5rem; color: var(--text-secondary);">
+          vᵢ = √2·9.8·<span id="exp-l">0.17</span>·(1-cos<span id="exp-ang">45</span>°) <br>
+          vᵢ = <span id="exp-vi" style="color: var(--accent-secondary);">0</span> m/s
+        </div>
+      </div>
+      <div id="exp-collision" style="margin-bottom: 0.5rem;">
+        <div>2. Collision: vᵦ = [2mₕ/(mₕ+mᵦ)]vᵢ</div>
+        <div style="padding-left: 0.5rem; color: var(--text-secondary);">
+          vᵦ = [2·<span id="exp-mh">7</span>/(<span id="exp-mh2">7</span>+<span id="exp-mb">35</span>)]·vᵢ <br>
+          vᵦ = <span id="exp-vb" style="color: var(--accent-tertiary);">0</span> m/s
+        </div>
+      </div>
+      <div id="exp-range">
+        <div>3. Projectile: R = vᵦ√(2h/g)</div>
+        <div style="padding-left: 0.5rem; color: var(--text-secondary);">
+          R = vᵦ·√[(2·<span id="exp-h">0.16</span>)/9.8] <br>
+          R = <span id="exp-range-final" style="color: var(--accent-primary); font-weight: bold;">0</span> cm
+        </div>
       </div>
     </div>
   `;
@@ -64,7 +90,16 @@ export function renderProjectileMotion(container) {
     mb: controls.querySelector('#mb-val'),
     vImpact: controls.querySelector('#v-impact'),
     vBall: controls.querySelector('#v-ball'),
-    range: controls.querySelector('#range-calc')
+    range: controls.querySelector('#range-calc'),
+    expL: controls.querySelector('#exp-l'),
+    expAng: controls.querySelector('#exp-ang'),
+    expVi: controls.querySelector('#exp-vi'),
+    expMh: controls.querySelector('#exp-mh'),
+    expMh2: controls.querySelector('#exp-mh2'),
+    expMb: controls.querySelector('#exp-mb'),
+    expVb: controls.querySelector('#exp-vb'),
+    expH: controls.querySelector('#exp-h'),
+    expRangeFinal: controls.querySelector('#exp-range-final')
   };
   const fireBtn = controls.querySelector('#fire-btn');
 
@@ -96,7 +131,18 @@ export function renderProjectileMotion(container) {
     displays.vBall.textContent = `Ball Launch Velocity: ${vBall.toFixed(2)} m/s`;
     displays.range.textContent = `Expected Range: ${range.toFixed(2) * 100} cm`;
 
-    const measured = parseFloat(controls.querySelector('#measured-range').value);
+    // Fill Breakdown
+    displays.expL.textContent = (l / 100).toFixed(2);
+    displays.expAng.textContent = Math.abs(sliders.angle.value);
+    displays.expVi.textContent = vImpact.toFixed(2);
+    displays.expMh.textContent = sliders.mh.value;
+    displays.expMh2.textContent = sliders.mh.value;
+    displays.expMb.textContent = sliders.mb.value;
+    displays.expVb.textContent = vBall.toFixed(2);
+    displays.expH.textContent = hi.toFixed(2);
+    displays.expRangeFinal.textContent = (range * 100).toFixed(1);
+
+    const measured = parseFloat(controls.querySelector('#measured-range').value / 100);
     const errorDisplay = controls.querySelector('#range-error');
     if (!isNaN(measured)) {
       const error = Math.abs((measured - range) / range) * 100;
@@ -118,11 +164,30 @@ export function renderProjectileMotion(container) {
     const { l, angleRad, vBall } = updateMath();
     const lPx = l * scale;
 
-    // Draw Ground
-    ctx.strokeStyle = '#333';
+    // Draw Ground & Scale
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(0, groundY); ctx.lineTo(canvas.width, groundY);
     ctx.stroke();
+
+    for (let cm = -20; cm <= 60; cm += 5) {
+      const px = pivotX + cm * (scale + 7.5);
+      if (px < 0 || px > canvas.width) continue;
+
+      const isMajor = cm % 5 === 0;
+      ctx.beginPath();
+      ctx.moveTo(px, groundY);
+      ctx.lineTo(px, groundY + (isMajor ? 10 : 5));
+      ctx.stroke();
+
+      if (isMajor) {
+        ctx.fillStyle = '#888';
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${cm}`, px, groundY + 15);
+      }
+    }
 
     let currentAngle = angleRad;
     let hammerX = pivotX + lPx * Math.sin(currentAngle);
