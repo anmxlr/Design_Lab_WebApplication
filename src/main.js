@@ -1,6 +1,5 @@
 import './style.css';
 import { renderHeader } from './components/Header.js';
-import { renderTangentVisualizer } from './components/TangentVisualizer.js';
 import { renderProjectileMotion } from './components/ProjectileMotion.js';
 import { renderSandCone } from './components/SandCone.js';
 import { renderLaserMirror } from './components/LaserMirror.js';
@@ -15,7 +14,6 @@ const experiments = {
   projectile: { title: 'Hammer/Ball Collision', render: renderProjectileMotion },
   cone: { title: 'Sand Cone Growth', render: renderSandCone },
   laser: { title: 'Laser & Chain Rule', render: renderLaserMirror },
-  tangent: { title: 'Tangent Visualizer', render: renderTangentVisualizer }
 };
 
 function init() {
