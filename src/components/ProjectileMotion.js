@@ -172,7 +172,7 @@ export function renderProjectileMotion(container) {
     ctx.stroke();
 
     for (let cm = -20; cm <= 60; cm += 5) {
-      const px = pivotX + cm * (scale + 7.5);
+      const px = pivotX + cm * (scale + 7.7);
       if (px < 0 || px > canvas.width) continue;
 
       const isMajor = cm % 5 === 0;
