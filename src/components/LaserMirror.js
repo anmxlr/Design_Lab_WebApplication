@@ -40,24 +40,46 @@ export function renderLaserMirror(container) {
         <div id="pos-error" style="margin-top: 0.5rem; font-weight: 600;"></div>
       </div>
     </div>
+  `;
 
+  const chainRuleContainer = document.createElement('div');
+  chainRuleContainer.className = 'glass-panel';
+  chainRuleContainer.style.marginTop = '1.5rem';
+  chainRuleContainer.innerHTML = `
     <!-- Chain Rule Analysis Section -->
-    <div id="chain-rule-display" style="margin-top: 1rem; font-family: monospace; background: rgba(255,153,0,0.1); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,153,0,0.2); font-size: 0.75rem;">
-      <div style="color: var(--accent-primary); font-weight: bold; margin-bottom: 0.5rem;">Chain Rule Analysis (dy/dθ)</div>
-      <div id="cr-m1" style="margin-bottom: 0.5rem;">
-        <div>M1 Sensitivity:</div>
-        <div style="padding-left: 0.5rem; color: var(--text-secondary);">
-          dy/dθ₁ = (dy/dφ₁) · (dφ₁/dθ₁) <br>
-          = <span id="cr-m1-comp1">0</span> · <span id="cr-m1-comp2">0</span> <br>
-          = <span id="cr-m1-total" style="color: var(--accent-secondary); font-weight: bold;">0</span> cm/deg
+    <div id="chain-rule-display" style="font-family: monospace; background: rgba(255,153,0,0.1); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255,153,0,0.2); font-size: 1rem;">
+      <div style="color: var(--accent-primary); font-weight: bold; margin-bottom: 1rem; font-size: 1.3rem; border-bottom: 1px solid rgba(255,153,0,0.2); padding-bottom: 0.75rem;">Chain Rule Analysis (dy/dθ)</div>
+      
+      <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: stretch;">
+        <div style="flex: 1; min-width: 250px; font-size: 0.9rem; color: #ccc; line-height: 1.6; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 6px; border-left: 3px solid var(--accent-primary);">
+          <strong style="color: #fff; font-size: 1.1rem; display: block; margin-bottom: 0.75rem;">Variables Legend:</strong>
+          <span style="color: var(--text-primary); font-weight: bold;">θ₁</span>, <span style="color: var(--text-primary); font-weight: bold;">θ₂</span> : Physical angles of M1 & M2<br>
+          <span style="color: var(--text-primary); font-weight: bold;">φ₁</span>, <span style="color: var(--text-primary); font-weight: bold;">φ₂</span> : Angles of deflected laser beam<br>
+          <span style="color: var(--text-primary); font-weight: bold;">y</span> : Final vertical spot position
         </div>
-      </div>
-      <div id="cr-m2">
-        <div>M2 Sensitivity:</div>
-        <div style="padding-left: 0.5rem; color: var(--text-secondary);">
-          dy/dθ₂ = (dy/dφ₂) · (dφ₂/dθ₂) <br>
-          = <span id="cr-m2-comp1">0</span> · <span id="cr-m2-comp2">0</span> <br>
-          = <span id="cr-m2-total" style="color: var(--accent-tertiary); font-weight: bold;">0</span> cm/deg
+
+        <div id="cr-m1" style="flex: 1.5; min-width: 300px; padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 6px;">
+          <div style="color: var(--accent-secondary); font-weight: bold; margin-bottom: 0.75rem; font-size: 1.1rem;">Mirror 1 (Effect via M2):</div>
+          <div style="padding-left: 0.5rem; color: #ddd; line-height: 1.8;">
+            <div style="color: var(--text-secondary); font-size: 1em;">dy/dθ₁ = (dy/dφ₂) · (dφ₂/dφ₁) · (dφ₁/dθ₁)</div>
+            <div>dy/dθ₁ = <span id="cr-m1-comp1" style="color: #4ade80;">0</span> · <span id="cr-m1-comp2" style="color: #60a5fa;">0</span> · <span id="cr-m1-comp3" style="color: #f472b6;">0</span></div>
+            <div style="margin-top: 0.75rem; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 0.75rem;">
+              <strong>dy/dθ₁ = <span id="cr-m1-total" style="color: var(--accent-secondary); font-size: 1.3em;">0</span> cm/deg</strong>
+              <div style="margin-top: 0.5rem; color: #bbb; font-size: 0.9em;">Expected Δy for +15° : <strong style="color: #fff;"><span id="cr-m1-pred">0</span> cm</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="cr-m2" style="flex: 1.5; min-width: 300px; padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 6px;">
+          <div style="color: var(--accent-tertiary); font-weight: bold; margin-bottom: 0.75rem; font-size: 1.1rem;">Mirror 2 (Direct Effect):</div>
+          <div style="padding-left: 0.5rem; color: #ddd; line-height: 1.8;">
+            <div style="color: var(--text-secondary); font-size: 1em;">dy/dθ₂ = (dy/dφ₂) · (dφ₂/dθ₂)</div>
+            <div>dy/dθ₂ = <span id="cr-m2-comp1" style="color: #4ade80;">0</span> · <span id="cr-m2-comp2" style="color: #f472b6;">0</span></div>
+            <div style="margin-top: 0.75rem; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 0.75rem;">
+              <strong>dy/dθ₂ = <span id="cr-m2-total" style="color: var(--accent-tertiary); font-size: 1.3em;">0</span> cm/deg</strong>
+              <div style="margin-top: 0.5rem; color: #bbb; font-size: 0.9em;">Expected Δy for +15° : <strong style="color: #fff;"><span id="cr-m2-pred">0</span> cm</strong></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -66,6 +88,7 @@ export function renderLaserMirror(container) {
   section.appendChild(canvasContainer);
   section.appendChild(controls);
   container.appendChild(section);
+  container.appendChild(chainRuleContainer);
 
   const alphaSlider = controls.querySelector('#alpha-slider');
   const theta1Slider = controls.querySelector('#theta1-slider');
@@ -79,12 +102,15 @@ export function renderLaserMirror(container) {
     path: controls.querySelector('#path-length'),
     spot: controls.querySelector('#screen-pos'),
     error: controls.querySelector('#pos-error'),
-    crM1Comp1: controls.querySelector('#cr-m1-comp1'),
-    crM1Comp2: controls.querySelector('#cr-m1-comp2'),
-    crM1Total: controls.querySelector('#cr-m1-total'),
-    crM2Comp1: controls.querySelector('#cr-m2-comp1'),
-    crM2Comp2: controls.querySelector('#cr-m2-comp2'),
-    crM2Total: controls.querySelector('#cr-m2-total')
+    crM1Comp1: chainRuleContainer.querySelector('#cr-m1-comp1'),
+    crM1Comp2: chainRuleContainer.querySelector('#cr-m1-comp2'),
+    crM1Comp3: chainRuleContainer.querySelector('#cr-m1-comp3'),
+    crM1Total: chainRuleContainer.querySelector('#cr-m1-total'),
+    crM1Pred: chainRuleContainer.querySelector('#cr-m1-pred'),
+    crM2Comp1: chainRuleContainer.querySelector('#cr-m2-comp1'),
+    crM2Comp2: chainRuleContainer.querySelector('#cr-m2-comp2'),
+    crM2Total: chainRuleContainer.querySelector('#cr-m2-total'),
+    crM2Pred: chainRuleContainer.querySelector('#cr-m2-pred')
   };
 
   function getMirrorEdges(pos, angle, mLen = 300) {
@@ -336,17 +362,20 @@ export function renderLaserMirror(container) {
     // --- Chain Rule Calculation ---
     const delta = 0.5; // degree step
     const base = traceRay(alphaDeg, theta1Deg, theta2Deg);
-    
+
     // M1 Analysis
     const step1 = traceRay(alphaDeg, theta1Deg + delta, theta2Deg);
     if (base.spot !== null && step1.spot !== null) {
       const dy_dtheta1 = (step1.spot - base.spot) / delta;
       const dphi1_dtheta1 = (step1.phi1 - base.phi1) * (180 / Math.PI) / delta;
-      const dy_dphi1 = dy_dtheta1 / dphi1_dtheta1;
+      const dphi2_dphi1 = (step1.phi2 - base.phi2) / (step1.phi1 - base.phi1);
+      const dy_dphi2 = (step1.spot - base.spot) / ((step1.phi2 - base.phi2) * (180 / Math.PI));
 
-      displays.crM1Comp1.textContent = dy_dphi1.toFixed(3);
-      displays.crM1Comp2.textContent = dphi1_dtheta1.toFixed(1);
+      displays.crM1Comp1.textContent = dy_dphi2.toFixed(3);
+      displays.crM1Comp2.textContent = dphi2_dphi1.toFixed(1);
+      displays.crM1Comp3.textContent = dphi1_dtheta1.toFixed(1);
       displays.crM1Total.textContent = dy_dtheta1.toFixed(3);
+      displays.crM1Pred.textContent = (dy_dtheta1 * 15).toFixed(2);
 
       // Ghost Ray for M1 sensitivity
       drawGhostPath(alphaDeg, theta1Deg + delta, theta2Deg, 'rgba(255, 126, 95, 0.2)');
@@ -362,6 +391,7 @@ export function renderLaserMirror(container) {
       displays.crM2Comp1.textContent = dy_dphi2.toFixed(3);
       displays.crM2Comp2.textContent = dphi2_dtheta2.toFixed(1);
       displays.crM2Total.textContent = dy_dtheta2.toFixed(3);
+      displays.crM2Pred.textContent = (dy_dtheta2 * 15).toFixed(2);
 
       // Ghost Ray for M2 sensitivity
       drawGhostPath(alphaDeg, theta1Deg, theta2Deg + delta, 'rgba(254, 180, 123, 0.2)');

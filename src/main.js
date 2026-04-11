@@ -7,7 +7,7 @@ import { renderLaserMirror } from './components/LaserMirror.js';
 const app = document.querySelector('#app');
 
 const state = {
-  currentExperiment: 'laser'
+  currentExperiment: 'projectile'
 };
 
 const experiments = {
