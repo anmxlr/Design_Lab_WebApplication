@@ -1,10 +1,10 @@
 :root {
-  --bg-color: #0b0e14;
-  --panel-bg: rgba(20, 24, 33, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --accent-primary: #ff9900;
-  --accent-secondary: #ff7e5f;
-  --accent-tertiary: #feb47b;
+  --bg-color: #000000;
+  --panel-bg: rgba(57, 59, 63, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.105);
+  --accent-primary: #000000;
+  --accent-secondary: #000000;
+  --accent-tertiary: #282828;
   --text-primary: #ffffff;
   --text-secondary: #a0aec0;
   --font-heading: 'Outfit', sans-serif;
@@ -58,11 +58,11 @@ h3 {
 }
 
 .button-primary {
-  background: linear-gradient(135deg, var(--accent-primary), #ffbf00);
+  background: #878787;
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 12px;
-  color: #000;
+  color: #000000;
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s, opacity 0.2s;

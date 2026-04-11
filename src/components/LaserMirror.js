@@ -47,8 +47,8 @@ export function renderLaserMirror(container) {
   chainRuleContainer.style.marginTop = '1.5rem';
   chainRuleContainer.innerHTML = `
     <!-- Chain Rule Analysis Section -->
-    <div id="chain-rule-display" style="font-family: monospace; background: rgba(255,153,0,0.1); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255,153,0,0.2); font-size: 1rem;">
-      <div style="color: var(--accent-primary); font-weight: bold; margin-bottom: 1rem; font-size: 1.3rem; border-bottom: 1px solid rgba(255,153,0,0.2); padding-bottom: 0.75rem;">Chain Rule Analysis (dy/dθ)</div>
+    <div id="chain-rule-display" style="font-family: monospace; background: rgba(70, 70, 70, 0.1); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(0, 0, 0, 0.2); font-size: 1rem;">
+      <div style="color: var(--accent-primary); font-weight: bold; margin-bottom: 1rem; font-size: 1.3rem; border-bottom: 1px solid rgba(41, 41, 41, 0.2); padding-bottom: 0.75rem;">Chain Rule Analysis (dy/dθ)</div>
       
       <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: stretch;">
         <div style="flex: 1; min-width: 250px; font-size: 0.9rem; color: #ccc; line-height: 1.6; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 6px; border-left: 3px solid var(--accent-primary);">

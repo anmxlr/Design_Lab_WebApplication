@@ -46,8 +46,8 @@ export function renderProjectileMotion(container) {
   analysisContainer.className = 'glass-panel';
   analysisContainer.style.marginTop = '1.5rem';
   analysisContainer.innerHTML = `
-    <div id="physics-explanation" style="font-family: monospace; background: rgba(255,153,0,0.1); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255,153,0,0.2); font-size: 1rem;">
-      <div style="color: var(--accent-primary); font-weight: bold; margin-bottom: 1rem; font-size: 1.3rem; border-bottom: 1px solid rgba(255,153,0,0.2); padding-bottom: 0.75rem;">Calculations & Sensitivity</div>
+    <div id="physics-explanation" style="font-family: monospace; background: rgba(70, 70, 70, 0.1); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(56, 56, 56, 0.2); font-size: 1rem;">
+      <div style="color: var(--accent-primary); font-weight: bold; margin-bottom: 1rem; font-size: 1.3rem; border-bottom: 1px solid rgba(35, 35, 35, 0.2); padding-bottom: 0.75rem;">Calculations & Sensitivity</div>
       <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: stretch;">
         
         <div id="exp-impact" style="flex: 1; min-width: 250px; padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 6px;">
@@ -64,7 +64,7 @@ export function renderProjectileMotion(container) {
         </div>
 
         <div id="exp-collision" style="flex: 1; min-width: 250px; padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 6px;">
-          <div style="color: var(--accent-tertiary); font-weight: bold; margin-bottom: 0.75rem; font-size: 1.1rem;">2. Momentum Transfer</div>
+          <div style="color: var(--accent-primary); font-weight: bold; margin-bottom: 0.75rem; font-size: 1.1rem;">2. Momentum Transfer</div>
           <div style="padding-left: 0.25rem; color: #ddd; line-height: 1.8;">
             <div style="color: var(--text-secondary); font-size: 1em;">vᵦ = [2mₕ/(mₕ+mᵦ)]vᵢ</div>
             <div>vᵦ = [2·<span id="exp-mh">7</span>/(<span id="exp-mh2">7</span>+<span id="exp-mb">35</span>)]·vᵢ</div>
@@ -202,7 +202,7 @@ export function renderProjectileMotion(container) {
     displays.expL.textContent = (l / 100).toFixed(2);
     displays.expAng.textContent = Math.abs(sliders.angle.value);
     displays.expVi.textContent = vImpact.toFixed(2);
-    
+
     displays.expViDl.textContent = (delta_vI_L > 0 ? '+' : '') + delta_vI_L.toFixed(3);
     displays.expViDtheta.textContent = (delta_vI_ang > 0 ? '+' : '') + delta_vI_ang.toFixed(3);
 
@@ -210,7 +210,7 @@ export function renderProjectileMotion(container) {
     displays.expMh2.textContent = sliders.mh.value;
     displays.expMb.textContent = sliders.mb.value;
     displays.expVb.textContent = vBall.toFixed(2);
-    
+
     displays.expVbDm.textContent = (delta_vB_mh > 0 ? '+' : '') + delta_vB_mh.toFixed(3);
     displays.expVbDmb.textContent = (delta_vB_mb > 0 ? '+' : '') + delta_vB_mb.toFixed(3);
 
@@ -222,9 +222,10 @@ export function renderProjectileMotion(container) {
     displays.expRDmh.textContent = (delta_R_mh > 0 ? '+' : '') + delta_R_mh.toFixed(2);
     displays.expRDmb.textContent = (delta_R_mb > 0 ? '+' : '') + delta_R_mb.toFixed(2);
 
-    const measured = parseFloat(controls.querySelector('#measured-range').value / 100);
+    const measuredInput = controls.querySelector('#measured-range').value;
     const errorDisplay = controls.querySelector('#range-error');
-    if (!isNaN(measured)) {
+    if (measuredInput.trim() !== '' && !isNaN(parseFloat(measuredInput))) {
+      const measured = parseFloat(measuredInput) / 100;
       const error = Math.abs((measured - range) / range) * 100;
       errorDisplay.textContent = `Error: ${error.toFixed(2)}%`;
       errorDisplay.style.color = error < 5 ? '#4ade80' : '#f87171';
