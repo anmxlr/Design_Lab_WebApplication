@@ -1,3 +1,5 @@
+import logoUrl from '../img/logo/logo.png';
+
 export function renderHeader(experiments, activeId, onNavigate) {
   const header = document.createElement('header');
   header.className = 'glass-panel';
@@ -17,7 +19,7 @@ export function renderHeader(experiments, activeId, onNavigate) {
   logoWrapper.style.alignItems = 'center';
 
   const logoImg = document.createElement('img');
-  logoImg.src = '/src/img/logo/logo.png';
+  logoImg.src = logoUrl;
   logoImg.alt = 'CalKit Logo';
   logoImg.style.width = '12rem';
   logoImg.style.height = '3rem';
