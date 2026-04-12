@@ -1,4 +1,4 @@
-import logoUrl from '../img/logo/logo.png';
+import logoUrl from '../img/logo.png';
 
 export function renderHeader(experiments, activeId, onNavigate) {
   const header = document.createElement('header');
