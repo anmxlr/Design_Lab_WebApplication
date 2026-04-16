@@ -1,4 +1,4 @@
-# PhysInteractive | Math & Physics Visualizers
+# Calkit | Math & Physics Visualizers
 
 **PhysInteractive** is a premium, interactive web application designed to help students and educators visualize complex mathematical and physics concepts across several interactive experiments. Built with a focus on modern aesthetics (glassmorphism) and real-time canvas rendering, the app allows users to bridge the gap between theoretical calculations and visual simulations.
 
