@@ -102,6 +102,32 @@ export function renderProjectileMotion(container) {
   container.appendChild(section);
   container.appendChild(analysisContainer);
 
+  const graphsContainer = document.createElement('div');
+  graphsContainer.className = 'glass-panel';
+  graphsContainer.style.marginTop = '1.5rem';
+  graphsContainer.innerHTML = `
+    <h3 style="margin-bottom: 1rem; color: var(--accent-primary);">Sensitivity Graphs (Range Dependencies)</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+      <div style="min-width: 0;">
+        <div style="margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.9em; text-align: center;">Range vs Hammer Mass (mₕ)</div>
+        <canvas id="r-mh-graph" style="background: rgba(0,0,0,0.2); border-radius: 8px; width: 100%; height: 180px;"></canvas>
+      </div>
+      <div style="min-width: 0;">
+        <div style="margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.9em; text-align: center;">Range vs Ball Mass (mᵦ)</div>
+        <canvas id="r-mb-graph" style="background: rgba(0,0,0,0.2); border-radius: 8px; width: 100%; height: 180px;"></canvas>
+      </div>
+      <div style="min-width: 0;">
+        <div style="margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.9em; text-align: center;">Range vs Release Angle (θ)</div>
+        <canvas id="r-ang-graph" style="background: rgba(0,0,0,0.2); border-radius: 8px; width: 100%; height: 180px;"></canvas>
+      </div>
+      <div style="min-width: 0;">
+        <div style="margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.9em; text-align: center;">Range vs Hammer Length (L)</div>
+        <canvas id="r-l-graph" style="background: rgba(0,0,0,0.2); border-radius: 8px; width: 100%; height: 180px;"></canvas>
+      </div>
+    </div>
+  `;
+  container.appendChild(graphsContainer);
+
   // Parameters
   const g = 9.81;
   const scale = 15;
@@ -348,7 +374,112 @@ export function renderProjectileMotion(container) {
     draw();
   });
 
+  function drawGraphs() {
+    const mh = parseFloat(sliders.mh.value) / 1000;
+    const l = parseFloat(sliders.l.value);
+    const angleRad = (parseFloat(sliders.angle.value) * Math.PI) / 180;
+    const mb = parseFloat(sliders.mb.value) / 1000;
+
+    const getR = (_l, _ang, _mh, _mb) => {
+      const _vi = Math.sqrt(2 * g * (_l / 100) * (1 - Math.cos(_ang)));
+      const _vb = (2 * _mh / (_mh + _mb)) * _vi;
+      const _hi = (33 - _l) / 100;
+      const _tof = _hi > 0 ? Math.sqrt(2 * _hi / g) : 0;
+      return _vb * _tof * 100; 
+    };
+
+    const plotGraph = (canvasId, min, max, val, calcForVal, xLabel) => {
+      const canvas = graphsContainer.querySelector('#' + canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const rect = canvas.parentNode.getBoundingClientRect();
+      if (rect.width === 0) return; 
+      canvas.width = rect.width;
+      canvas.height = 180;
+
+      const padding = 35;
+      const width = canvas.width - padding * 2;
+      const height = canvas.height - padding * 2;
+      
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const points = [];
+      let minR = Infinity;
+      let maxR = -Infinity;
+      const steps = 50;
+      for (let i = 0; i <= steps; i++) {
+        const x = min + (max - min) * (i / steps);
+        const y = calcForVal(x);
+        points.push({ x, y });
+        if (y < minR) minR = y;
+        if (y > maxR) maxR = y;
+      }
+
+      const yRange = maxR === minR ? 1 : maxR - minR;
+      const yMinFixed = Math.max(0, minR - yRange * 0.1);
+      const yMaxFixed = maxR + yRange * 0.1;
+
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padding, padding);
+      ctx.lineTo(padding, canvas.height - padding + 5);
+      ctx.lineTo(canvas.width - padding + 15, canvas.height - padding + 5);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#ff9900';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      points.forEach((p, i) => {
+        const px = padding + ((p.x - min) / (max - min)) * width;
+        const py = (canvas.height - padding) - ((p.y - yMinFixed) / (yMaxFixed - yMinFixed)) * height;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      });
+      ctx.stroke();
+
+      const currY = calcForVal(val);
+      const currPx = padding + ((val - min) / (max - min)) * width;
+      const currPy = (canvas.height - padding) - ((currY - yMinFixed) / (yMaxFixed - yMinFixed)) * height;
+      
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(currPx, canvas.height - padding + 5);
+      ctx.lineTo(currPx, currPy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(currPx, currPy, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#777';
+      ctx.font = '10px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(xLabel, canvas.width / 2, canvas.height - 5);
+      
+      ctx.save();
+      ctx.translate(12, canvas.height / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText('Range (cm)', 0, 0);
+      ctx.restore();
+      
+      ctx.fillStyle = '#4ade80';
+      ctx.textAlign = currPx > canvas.width - 60 ? 'right' : 'left';
+      const textX = currPx > canvas.width - 60 ? currPx - 8 : currPx + 8;
+      ctx.fillText(`R: ${currY.toFixed(1)}`, textX, currPy - 10);
+    };
+
+    plotGraph('r-mh-graph', 30, 150, mh * 1000, (x) => getR(l, angleRad, x / 1000, mb), 'mₕ (g)');
+    plotGraph('r-mb-graph', 10, 100, mb * 1000, (x) => getR(l, angleRad, mh, x / 1000), 'mᵦ (g)');
+    plotGraph('r-ang-graph', -90, 90, angleRad * 180 / Math.PI, (x) => getR(l, x * Math.PI / 180, mh, mb), 'θ (°)');
+    plotGraph('r-l-graph', 1, 20, l, (x) => getR(x, angleRad, mh, mb), 'L (cm)');
+  }
+
   Object.values(sliders).forEach(s => s.addEventListener('input', () => {
+    drawGraphs();
     if (state === 'idle') {
       updateMath();
       draw();
@@ -358,4 +489,6 @@ export function renderProjectileMotion(container) {
   controls.querySelector('#measured-range').addEventListener('input', updateMath);
 
   draw();
+  setTimeout(drawGraphs, 0);
+  window.addEventListener('resize', drawGraphs);
 }

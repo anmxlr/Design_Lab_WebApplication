@@ -447,9 +447,9 @@ export function renderSandCone(container) {
   }
 
   addBtn.addEventListener('click', () => {
+    lastHeight = update().h;
     currentVolume += parseFloat(sliders.dv.value);
     const { h } = update();
-    lastHeight = h;
     iterations++;
     dataHistory.push({ v: currentVolume, h: h });
     draw();
